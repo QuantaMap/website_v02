@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantaMap | Quantum Metrology &amp; Diagnostics</title>
+<meta name="description" content="QuantaMap develops new metrology and diagnostic tools for the quantum industry. SQUID-on-tip microscopy for quantum chip defect inspection.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<style>
+:root{
+  --bg:#08060d;
+  --bg2:#0d0a16;
+  --pink:#f00090;
+  --pink-soft:#ff4db8;
+  --purple:#7a4bd6;
+  --purple-deep:#503090;
+  --indigo:#2a1a8c;
+  --text:#f2eefb;
+  --muted:#a89fc0;
+  --card:#150d29;
+  --block-purple:#4a1272;
+  --block-indigo:#0f2d7a;
+  --block-violet:#2d1060;
+  --block-magenta:#a4006b;
+  --grad:var(--pink);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  font-weight:300;
+  line-height:1.7;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{font-family:'Outfit',sans-serif;font-weight:300;line-height:1.18;letter-spacing:.01em}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--pink);color:#fff}
+
+/* ---------- canvas background ---------- */
+#field{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ---------- nav ---------- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 5vw;
+  background:var(--bg);
+  border-bottom:1px solid #1f1636;
+  transition:padding .3s ease;
+}
+nav.scrolled{padding:10px 5vw}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{height:44px;width:auto;display:block;transition:height .3s ease}
+nav.scrolled .brand-logo{height:36px}
+.nav-links{display:flex;gap:34px;align-items:center;font-size:.92rem;font-weight:300;letter-spacing:.04em}
+.nav-links a{color:var(--muted);position:relative;transition:color .25s}
+.nav-links a:hover{color:#fff}
+.nav-links a::after{content:'';position:absolute;left:0;bottom:-6px;width:0;height:1px;background:var(--pink);transition:width .3s}
+.nav-links a:hover::after{width:100%}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:14px 32px;border-radius:8px;
+  font-family:'Outfit',sans-serif;font-weight:400;font-size:.92rem;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--pink);color:#fff;border:none;cursor:pointer;
+  transition:background .25s,transform .25s;
+}
+.btn:hover{background:#c4007a;transform:translateY(-2px)}
+.btn.ghost{background:transparent;border:1px solid #fff}
+.btn.ghost:hover{background:#fff;color:var(--bg)}
+.nav-cta{padding:9px 20px;font-size:.85rem;color:#fff !important}
+.nav-cta:hover{background:#c4007a;color:#fff !important}
+#hamburger{display:none;background:none;border:none;cursor:pointer}
+#hamburger span{display:block;width:24px;height:2px;background:#fff;margin:5px 0;border-radius:2px}
+
+/* ---------- layout ---------- */
+section{position:relative;z-index:1;padding:110px 5vw;max-width:1240px;margin:0 auto}
+.kicker{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:400;
+  letter-spacing:.28em;text-transform:uppercase;color:var(--pink-soft);
+  margin-bottom:18px;
+}
+.kicker::before{content:'';width:32px;height:1px;background:var(--pink)}
+h2.section-title{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:200;margin-bottom:22px}
+.section-sub{color:var(--muted);max-width:640px;font-size:1.06rem}
+
+/* ---------- hero ---------- */
+header.hero{
+  position:relative;z-index:1;
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding:140px 5vw 150px;max-width:none;margin:0;
+}
+.hero-inner{max-width:1240px;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:flex-start}
+.hero::before{
+  content:'';position:absolute;inset:0;z-index:-1;
+  background:url('assets/images/hero/hero_lab_photo.jpg') 46% 30%/cover no-repeat;
+  filter:saturate(.85);
+  opacity:.9;
+}
+.hero::after{
+  content:'';position:absolute;inset:0;z-index:-1;
+  background:
+    linear-gradient(180deg, rgba(8,6,13,.35) 0%, rgba(8,6,13,0) 40%, rgba(8,6,13,.2) 78%, #08060d 100%),
+    linear-gradient(90deg, rgba(8,6,13,.6) 0%, rgba(8,6,13,.12) 55%, rgba(8,6,13,0) 100%);
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+h1.hero-title{
+  font-size:clamp(2.8rem,7vw,5.4rem);
+  font-weight:200;
+  max-width:18ch;
+  text-shadow:0 2px 10px rgba(8,6,13,.95),0 4px 34px rgba(8,6,13,.95);
+}
+.hero-sub{text-shadow:0 1px 8px rgba(8,6,13,.98),0 3px 22px rgba(8,6,13,.95)}
+h1.hero-title .grad{color:var(--pink);font-weight:300}
+.hero-sub{margin:30px 0 44px;font-size:1.15rem;color:var(--muted);max-width:56ch}
+.hero-ctas{display:flex;gap:18px;flex-wrap:wrap}
+.hero-scroll{
+  position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
+  color:var(--muted);font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.hero-scroll::after{content:'';width:1px;height:44px;background:var(--pink);animation:pulse 2.4s infinite}
+@media(max-height:840px){.hero-scroll{display:none}}
+
+/* ---------- stats strip ---------- */
+.stats{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;
+  margin-top:-40px;border-radius:12px;overflow:hidden;
+}
+.stat{padding:40px 28px;text-align:center}
+.stat:nth-child(1){background:var(--pink)}
+.stat:nth-child(2){background:var(--block-magenta)}
+.stat:nth-child(3){background:var(--block-purple)}
+.stat:nth-child(4){background:var(--block-indigo)}
+.stat:nth-child(5){background:var(--block-violet)}
+.stat b{display:block;font-family:'Outfit',sans-serif;font-size:2.1rem;font-weight:200;color:#fff;white-space:nowrap}
+.stat span{font-size:.82rem;color:rgba(255,255,255,.75);letter-spacing:.1em;text-transform:uppercase}
+
+/* ---------- testimonials ---------- */
+.testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:26px;margin-top:-85px;margin-bottom:95px}
+.quote{margin:0;padding:0 24px}
+.quote blockquote{font-family:'Times New Roman',Georgia,serif;font-style:italic;font-weight:400;font-size:1.3rem;line-height:1.55;color:#fff;margin:0 0 14px}
+.quote figcaption{font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--pink-soft)}
+
+/* ---------- customers ---------- */
+.customers-sub{margin-top:80px;text-align:center}
+.customer-row{display:flex;flex-wrap:wrap;gap:22px 54px;align-items:center;justify-content:center;margin-top:36px}
+.customer-row img{
+  height:36px;width:auto;object-fit:contain;
+  filter:brightness(0) invert(1);
+  opacity:.65;transition:opacity .3s,transform .3s;
+}
+.customer-row img:hover{opacity:1;transform:scale(1.05)}
+
+/* ---------- cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:26px;margin-top:56px}
+.card{
+  position:relative;padding:44px 38px;border-radius:12px;
+  transition:transform .35s;
+}
+.card:nth-child(1){background:var(--block-purple)}
+.card:nth-child(2){background:var(--block-indigo)}
+.card:nth-child(3){background:var(--block-magenta)}
+.card:hover{transform:translateY(-6px)}
+.card h3{font-size:1.35rem;font-weight:400;margin-bottom:14px;color:#fff}
+.card p{color:rgba(255,255,255,.82);font-size:.98rem;font-weight:300}
+
+/* ---------- tech highlight ---------- */
+.tech-panel{
+  margin-top:70px;padding:60px 56px;border-radius:12px;
+  background:var(--block-violet);
+  display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:center;
+}
+.tech-panel h3{font-size:1.9rem;font-weight:300;margin-bottom:18px;color:#fff}
+.tech-panel h3 .grad{color:var(--pink-soft)}
+.tech-panel p{color:rgba(255,255,255,.82);font-weight:300}
+.squid-art{display:flex;justify-content:center}
+.squid-art img{width:100%;max-width:440px;height:auto}
+.measure-panel{background:var(--card);grid-template-columns:.9fr 1.1fr;margin-top:26px}
+.measure-panel .squid-art img{max-width:480px}
+
+/* ---------- results ---------- */
+.results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:26px;margin-top:56px}
+.result-card{padding:40px 36px;border-radius:12px;transition:transform .35s}
+.result-card:hover{transform:translateY(-6px)}
+.result-card img{width:100%;height:340px;object-fit:contain;margin-bottom:26px}
+.result-card img.framed{background:#fff;border-radius:10px;padding:12px}
+.result-card h3{font-size:1.4rem;font-weight:400;color:#fff;margin-bottom:12px}
+.result-card p{color:rgba(255,255,255,.85);font-weight:300;font-size:.98rem}
+
+/* ---------- products ---------- */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:26px;margin-top:56px}
+.product-card{display:flex;flex-direction:column;padding:32px 30px;border-radius:12px;transition:transform .35s}
+.product-card:hover{transform:translateY(-6px)}
+.product-card img{width:100%;height:240px;object-fit:cover;border-radius:10px;margin-bottom:24px}
+.product-placeholder{
+  height:240px;border-radius:10px;margin-bottom:24px;
+  border:1.5px dashed rgba(255,255,255,.4);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+}
+.product-placeholder svg{width:40px;height:40px}
+.product-placeholder span{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);text-align:center;line-height:1.9;padding:0 24px}
+.product-card h3{font-size:1.35rem;font-weight:400;color:#fff;margin-bottom:12px}
+.product-card p{color:rgba(255,255,255,.85);font-weight:300;font-size:.95rem;flex-grow:1}
+.product-cta{margin-top:22px;align-self:flex-start;padding:10px 24px;font-size:.82rem}
+
+/* ---------- publications ---------- */
+.soon{
+  display:inline-block;margin-left:10px;padding:4px 14px;border-radius:8px;
+  font-family:'Outfit',sans-serif;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+  background:var(--pink);color:#fff;vertical-align:middle;
+}
+.pub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:26px;margin-top:56px}
+.pub-card{display:flex;gap:28px;align-items:center;padding:36px 32px;border-radius:12px;transition:transform .35s}
+.pub-card:hover{transform:translateY(-6px)}
+.pub-card img{width:170px;flex-shrink:0;border-radius:8px;box-shadow:none}
+.pub-card h3{font-size:1.2rem;font-weight:400;color:#fff;margin-bottom:10px}
+.pub-card p{color:rgba(255,255,255,.85);font-weight:300;font-size:.92rem}
+.img-src{display:block;margin-top:10px;font-size:.72rem;letter-spacing:.06em;color:rgba(255,255,255,.55) !important;text-decoration:none}
+.img-src:hover{color:#fff !important;text-decoration:underline}
+@media(max-width:600px){.pub-card{flex-direction:column;align-items:flex-start}}
+
+/* ---------- team ---------- */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;margin-top:56px}
+.member{
+  overflow:hidden;position:relative;border-radius:12px;
+  background:var(--block-violet);
+  transition:transform .35s;
+}
+.team-grid .member:nth-child(4n+2){background:var(--block-purple)}
+.team-grid .member:nth-child(4n+3){background:var(--block-indigo)}
+.team-grid .member:nth-child(4n){background:#33104f}
+.member:hover{transform:translateY(-6px)}
+.member img{width:100%;aspect-ratio:1/1.05;object-fit:cover;display:block;transition:transform .5s}
+.member:hover img{transform:scale(1.04)}
+.member .info{padding:16px 18px 18px;position:relative}
+.member h4{font-size:1.05rem;font-weight:400;color:#fff}
+.member span{font-size:.8rem;color:rgba(255,255,255,.75);letter-spacing:.08em;text-transform:uppercase}
+.member-link{display:block;margin-top:6px;font-size:.8rem;color:rgba(255,255,255,.85);text-decoration:none}
+.member-link:hover{color:#fff;text-decoration:underline}
+
+/* ---------- news timeline ---------- */
+.timeline{margin-top:56px;position:relative;padding-left:34px}
+.timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:1px;background:var(--purple-deep)}
+.tl-item{position:relative;padding:0 0 42px 26px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{
+  content:'';position:absolute;left:-34px;top:6px;width:16px;height:16px;border-radius:50%;
+  background:var(--pink);
+}
+.tl-item h3{font-size:1.2rem;font-weight:400;margin-bottom:6px}
+.tl-item p{color:var(--muted);font-size:.95rem;max-width:640px}
+.tl-item .tag{
+  display:inline-block;margin-bottom:10px;padding:4px 14px;border-radius:6px;
+  font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
+  background:var(--block-purple);color:#fff;
+}
+.tl-item .tag.tag-funding{background:var(--block-magenta)}
+.tl-item .tag.tag-science{background:var(--block-indigo)}
+.tl-item .date{display:block;font-size:.78rem;color:var(--muted);letter-spacing:.06em;margin-bottom:8px}
+.tl-item a.tl-link{color:inherit;text-decoration:none}
+.tl-item a.tl-link h3{transition:color .25s}
+.tl-item a.tl-link:hover h3{color:var(--pink-soft)}
+
+/* ---------- careers ---------- */
+.roles{margin-top:56px;display:flex;flex-direction:column;gap:16px}
+.role{
+  padding:26px 32px;border-radius:12px;
+  background:var(--card);
+  transition:background .3s;
+  cursor:pointer;
+}
+.role.open{background:var(--block-purple)}
+.role-header{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.role h4{font-size:1.1rem;font-weight:400;margin-bottom:4px}
+.role-header > div:first-child > p{color:var(--muted);font-size:.9rem;margin:0}
+.role.open .role-header > div:first-child > p{color:rgba(255,255,255,.8)}
+.role .arrow{flex-shrink:0;width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;border:1px solid var(--pink);color:var(--pink-soft);font-size:1rem;transition:background .3s,color .3s,transform .3s;font-family:'Outfit',sans-serif;letter-spacing:.04em;white-space:nowrap;padding:0 12px;width:auto}
+.role.open .arrow{background:var(--pink);color:#fff}
+.role-body{display:none;border-top:1px solid rgba(255,255,255,.12);margin-top:18px;padding-top:18px}
+.role.open .role-body{display:block}
+.role-body p{color:rgba(255,255,255,.85);font-size:.96rem;margin-bottom:18px}
+.role-body .apply-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:8px;background:var(--pink);color:#fff;font-family:'Outfit',sans-serif;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;transition:background .25s}
+.role-body .apply-btn:hover{background:#c4007a}
+.careers-note{
+  margin-top:44px;padding:48px;border-radius:12px;
+  background:var(--block-indigo);
+}
+.careers-note h3{margin-bottom:14px;font-size:1.5rem;font-weight:400;color:#fff}
+.careers-note p{color:rgba(255,255,255,.85);max-width:75ch;font-weight:300}
+.careers-note .apply{margin-top:24px}
+
+/* ---------- partners ---------- */
+.partners{padding-top:40px}
+.logo-row{
+  display:flex;flex-wrap:wrap;gap:44px 60px;align-items:center;justify-content:center;
+  margin-top:48px;
+}
+.logo-row a{display:inline-flex;align-items:center}
+.logo-row img{
+  height:44px;width:auto;object-fit:contain;
+  opacity:.75;
+  transition:opacity .3s,transform .3s;
+}
+.logo-row a:hover img{opacity:1;transform:scale(1.06)}
+.customer-row a{display:inline-flex;align-items:center}
+.customer-row a:hover img{opacity:1;transform:scale(1.05)}
+
+/* ---------- contact ---------- */
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px;margin-top:56px}
+.contact-card{padding:40px 36px;border-radius:12px}
+.contact-card:nth-child(1){background:var(--block-purple)}
+.contact-card:nth-child(2){background:var(--block-indigo)}
+.contact-card:nth-child(3){background:var(--block-magenta)}
+.contact-card h3{font-size:1.25rem;font-weight:400;margin-bottom:16px;display:flex;align-items:center;gap:12px;color:#fff}
+.contact-card h3 svg{width:22px;height:22px;stroke:#fff}
+.contact-card p,.contact-card a{color:rgba(255,255,255,.85);font-size:.98rem;font-weight:300}
+.contact-card a{display:block;padding:4px 0;transition:color .25s}
+.contact-card a:hover{color:#fff}
+
+/* ---------- footer ---------- */
+footer{
+  position:relative;z-index:1;margin-top:60px;
+  border-top:1px solid #1f1636;
+  padding:44px 5vw;text-align:center;color:var(--muted);font-size:.82rem;font-weight:300;
+}
+footer p{max-width:720px;margin:0 auto 6px}
+
+/* ---------- reveal animation ---------- */
+.reveal{opacity:0;transform:translateY(34px);transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* ---------- responsive ---------- */
+@media(max-width:880px){
+  .nav-links{
+    position:fixed;top:64px;right:0;left:0;
+    flex-direction:column;gap:0;padding:10px 0 20px;
+    background:rgba(8,6,13,.97);backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(240,0,144,.2);
+    display:none;
+  }
+  .nav-links.open{display:flex}
+  .nav-links a{padding:14px 0}
+  #hamburger{display:block}
+  .tech-panel{grid-template-columns:1fr;padding:40px 30px}
+  section{padding:80px 6vw}
+}
+</style>
+</head>
+<body>
+
+<canvas id="field"></canvas>
+
+<nav id="nav">
+  <a class="brand" href="#top">
+    <img src="assets/logo_quantamap.png" alt="QuantaMap logo" class="brand-logo">
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a href="#what">What we do</a>
+    <a href="#results">Results</a>
+    <a href="#products">Products</a>
+    <a href="#team">Team</a>
+    <a href="#news">News</a>
+    <a href="#careers">Careers</a>
+    <a href="#contact">Contact</a>
+    <a href="#careers" class="btn nav-cta">Join us</a>
+  </div>
+  <button id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <h1 class="hero-title">Mapping the invisible, <span class="grad">enabling the quantum revolution</span></h1>
+    <p class="hero-sub">We build new metrology and diagnostic tools for the quantum industry. Our SQUID-on-tip microscope reveals why quantum chips fail, so the industry can make them work.</p>
+    <div class="hero-ctas">
+      <a class="btn" href="#what">Discover our technology &rarr;</a>
+      <a class="btn ghost" href="#careers">We're hiring</a>
+    </div>
+  </div>
+  <div class="hero-scroll">Scroll</div>
+</header>
+
+<section>
+  <div class="testimonials reveal">
+    <figure class="quote">
+      <blockquote>&ldquo;The quantitative insights QuantaMap generated can be fed directly into our simulations, helping guide the design of our future chips.&rdquo;</blockquote>
+      <figcaption>Ella Lachman, Senior QM R&amp;D Engineer at Rigetti</figcaption>
+    </figure>
+    <figure class="quote">
+      <blockquote>&ldquo;They are so good looking! We are jealous.&rdquo;</blockquote>
+      <figcaption>TNO, spin qubit division</figcaption>
+    </figure>
+  </div>
+  <div class="stats reveal">
+    <div class="stat"><b style="font-size:1.5rem;line-height:3.1rem">Working tech</b><span>2 papers, 5 happy customers</span></div>
+    <div class="stat"><b>3</b><span>microscopes running</span></div>
+    <div class="stat"><b>EIC</b><span>Accelerator awardee</span></div>
+    <div class="stat"><b>14</b><span>team members from 8 countries</span></div>
+  </div>
+</section>
+
+<section id="what">
+  <div class="reveal">
+    <div class="kicker">What we do</div>
+    <h2 class="section-title">Diagnostics for the quantum industry</h2>
+    <p class="section-sub">At QuantaMap, we develop cutting-edge tools for metrology and defect inspection of quantum chips and other quantum hardware.</p>
+  </div>
+  <div class="cards">
+    <div class="card reveal">
+      <h3>The roadblock for quantum</h3>
+      <p>Quantum chips often underperform, and there is no way to find out which component failed. This is a major roadblock for quantum computing.</p>
+    </div>
+    <div class="card reveal">
+      <h3>Our solution</h3>
+      <p>Our IP-protected SQUID-on-tip microscope pinpoints defects in quantum hardware that no other tool can see.</p>
+    </div>
+    <div class="card reveal">
+      <h3>The impact</h3>
+      <p>Our technology will impact the quantum industry and beyond, helping enable the quantum revolution.</p>
+    </div>
+  </div>
+  <div class="tech-panel reveal">
+    <div>
+      <h3>Built on <span class="grad">SQUID-on-tip</span> technology</h3>
+      <p>A superconducting quantum interference device at the apex of a nanoscale tip: the most sensitive magnetic sensor in existence, scanned across a chip to map currents, dissipation and defects with unprecedented resolution, at cryogenic temperatures, where quantum hardware actually operates.</p>
+    </div>
+    <div class="squid-art">
+      <img src="assets/images/science/afm_squid.png" alt="AFM-SQUID cantilever scanning a test sample" loading="lazy">
+    </div>
+  </div>
+  <div class="tech-panel measure-panel reveal">
+    <div class="squid-art">
+      <div>
+        <img src="assets/images/science/multichannel_scan.png" alt="Layered scan maps: magnetic dipoles, dissipation, electrical currents and topography" loading="lazy" style="width:100%;max-width:480px">
+        <a class="img-src" href="https://pubs.acs.org/doi/abs/10.1021/acs.nanolett.5c04571" target="_blank" rel="noopener">Source: Nano Letters, 10.1021/acs.nanolett.5c04571</a>
+      </div>
+    </div>
+    <div>
+      <h3>One scan, <span class="grad">every channel that matters</span></h3>
+      <p>In a single pass our microscope maps topography, electrical currents, dissipation (heat) and magnetic dipoles: simultaneously, on the same spot, at millikelvin-compatible conditions. These are exactly the quantities that decide whether a quantum device works.</p>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="reveal">
+    <div class="kicker">It already works</div>
+    <h2 class="section-title">Measuring real devices, today</h2>
+    <p class="section-sub">This is not a concept: our microscope is up and running, producing data on quantum chips and quantum materials.</p>
+  </div>
+  <div class="results-grid">
+    <div class="result-card reveal" style="background:var(--block-violet)">
+      <img src="assets/images/science/chip_scan.png" alt="Scan of a quantum chip: topography, static field and AC field" loading="lazy" style="margin-bottom:0">
+      <span class="img-src" style="margin-bottom:16px">Source: in preparation (2026)</span>
+      <h3>Quantum chips</h3>
+      <p>We image superconducting quantum circuits as they operate: topography, static field and AC field maps of the same structure reveal where currents flow and where devices deviate from design.</p>
+    </div>
+    <div class="result-card reveal" style="background:var(--block-purple)">
+      <img src="assets/images/science/quantum_material_scan.png" alt="AC field map of supercurrent channels in a quantum material" loading="lazy" class="framed" style="margin-bottom:0">
+      <a class="img-src" href="https://arxiv.org/abs/2606.20157" target="_blank" rel="noopener" style="margin-bottom:16px">Source: arXiv:2606.20157</a>
+      <h3>Quantum materials</h3>
+      <p>We map supercurrent flow in novel quantum materials at the nanoscale, resolving current channels and local superconducting properties that no transport measurement can see.</p>
+    </div>
+  </div>
+</section>
+
+<section id="products">
+  <div class="reveal">
+    <div class="kicker">Products</div>
+    <h2 class="section-title">What you can buy from us</h2>
+    <p class="section-sub">From individual sensors to complete diagnostics: three ways to put our technology to work for you.</p>
+  </div>
+  <div class="products-grid">
+    <div class="product-card reveal" style="background:var(--block-violet)">
+      <img src="assets/images/products/tip_product.jpg" alt="Packaged SQUID-on-tip probe in its carrier" loading="lazy">
+      <h3>Tips &amp; AFM-SQUIDs</h3>
+      <p>We sell SQUID-on-tip probes and complete AFM-SQUID sensor assemblies, fabricated in-house and packaged ready to integrate into your own setup.</p>
+      <a class="btn ghost product-cta" href="mailto:johannes@quantamap.eu?subject=Tips%20%26%20AFM-SQUIDs">Enquire &rarr;</a>
+    </div>
+    <div class="product-card reveal" style="background:var(--block-purple)">
+      <div class="product-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
+        <span>Photo coming soon<br>(persons on computer discussing data)</span>
+      </div>
+      <h3>Diagnostics as a Service</h3>
+      <p>Send us your chip and we scan it. You receive a full nanoscale diagnostics report of your quantum devices, no hardware needed on your side. Several customers already rely on our DaaS.</p>
+      <a class="btn ghost product-cta" href="mailto:johannes@quantamap.eu?subject=Diagnostics%20as%20a%20Service">Enquire &rarr;</a>
+    </div>
+    <div class="product-card reveal" style="background:var(--block-indigo)">
+      <div class="product-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+        <span>Photo coming soon<br>(real cryostat with QuantaMap logo)</span>
+      </div>
+      <h3>Full systems</h3>
+      <p>A complete scanning AFM-SQUID microscope for your lab: cryo-compatible scanning system, sensors and software, delivered and supported by our team.</p>
+      <a class="btn ghost product-cta" href="mailto:johannes@quantamap.eu?subject=Full%20systems">Enquire &rarr;</a>
+    </div>
+  </div>
+  <div class="customers-sub reveal">
+    <div class="kicker" style="justify-content:center">Customers</div>
+    <div class="customer-row">
+      <a href="https://www.quantware.eu" target="_blank" rel="noopener"><img src="assets/customers/customer_quantware.svg" alt="QuantWare" loading="lazy"></a>
+      <a href="https://www.rigetti.com" target="_blank" rel="noopener"><img src="assets/customers/customer_rigetti.svg" alt="Rigetti Computing" loading="lazy"></a>
+      <a href="https://www.tno.nl" target="_blank" rel="noopener"><img src="assets/customers/customer_tno.svg" alt="TNO" loading="lazy" style="height:30px"></a>
+      <a href="https://www.lmu.de" target="_blank" rel="noopener"><img src="assets/customers/customer_lmu.svg" alt="LMU Munich" loading="lazy" style="height:30px"></a>
+      <a href="https://www.stanford.edu" target="_blank" rel="noopener"><img src="assets/customers/customer_stanford.svg" alt="Stanford University" loading="lazy"></a>
+    </div>
+  </div>
+</section>
+
+<section id="publications">
+  <div class="reveal">
+    <div class="kicker">Publications</div>
+    <h2 class="section-title">Science published with our tech</h2>
+    <p class="section-sub">Results obtained with our microscope are already out, with more on the way. <span class="soon">More coming soon</span></p>
+  </div>
+  <div class="pub-grid">
+    <div class="pub-card reveal" style="background:var(--block-indigo)">
+      <img src="assets/images/publications/nanolett_cover.png" alt="Nano Letters journal cover featuring our work" loading="lazy">
+      <div>
+        <h3>Nano Letters cover article</h3>
+        <p>Our microscope development was featured on the cover of Nano Letters, demonstrating the performance of the instrument.</p>
+        <a class="img-src" href="https://pubs.acs.org/doi/abs/10.1021/acs.nanolett.5c04571" target="_blank" rel="noopener">Source: Nano Letters, 10.1021/acs.nanolett.5c04571</a>
+      </div>
+    </div>
+    <div class="pub-card reveal" style="background:var(--block-magenta)">
+      <img src="assets/images/publications/arxiv_preprint.png" alt="Preprint: Direct Observation of Channelised Supercurrents in a Kagome Superconductor" loading="lazy">
+      <div>
+        <h3>Channelised supercurrents in a kagome superconductor</h3>
+        <p>Using our SQUID microscope, we directly observed networks of narrow supercurrent channels in CsV<sub>3</sub>Sb<sub>5</sub> flakes: new physics made visible by our technology.</p>
+        <a class="img-src" href="https://arxiv.org/abs/2606.20157" target="_blank" rel="noopener">Source: arXiv:2606.20157</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="reveal">
+    <div class="kicker">Who we are</div>
+    <h2 class="section-title">Meet the QuantaMap team</h2>
+    <p class="section-sub">A team of eight nationalities, motivated to solve hard problems that don't have solutions yet. We value mentorship, trust, kindness, and ambition, and we're committed to an inclusive environment where everyone can thrive.</p>
+  </div>
+  <div class="team-grid">
+    <div class="member reveal"><img src="assets/team/team_Johannes-Jobst.jpg" alt="Johannes Jobst" loading="lazy"><div class="info"><h4>Johannes Jobst</h4><span>Founder, CEO</span><a href="https://www.linkedin.com/in/johannes-jobst/" target="_blank" rel="noopener" class="member-link">LinkedIn &rarr;</a></div></div>
+    <div class="member reveal"><img src="assets/team/team_Kaveh-Lahabi.jpg" alt="Kaveh Lahabi" loading="lazy"><div class="info"><h4>Kaveh Lahabi</h4><span>Founder, CTO</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_Milan-Allan.jpg" alt="Milan P Allan" loading="lazy"><div class="info"><h4>Milan P Allan</h4><span>Founder</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_Daan-Boltje.jpg" alt="Daan Boltje" loading="lazy"><div class="info"><h4>Daan Boltje</h4><span>System Architect</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_Luigi-Mastrodomenico.jpg" alt="Luigi Mastrodomenico" loading="lazy"><div class="info"><h4>Luigi Mastrodomenico</h4><span>Microscope Designer</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_Jessalyn-DeVine.jpg" alt="Jessalyn DeVine" loading="lazy"><div class="info"><h4>Jessalyn DeVine</h4><span>Application Scientist</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_Dalal-Benali.jpg" alt="Dalal Benali" loading="lazy"><div class="info"><h4>Dalal Benali</h4><span>Nanofab Engineer</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_Vlad-Tkachuk.jpg" alt="Vlad Tkachuk" loading="lazy"><div class="info"><h4>Vlad Tkachuk</h4><span>AFM &amp; Electronics Engineer</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_Julian-van-Doorn.jpg" alt="Julian van Doorn" loading="lazy"><div class="info"><h4>Julian van Doorn</h4><span>AIT Engineer</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_Nick-van-Nielen.jpg" alt="Nick van Nielen" loading="lazy"><div class="info"><h4>Nick van Nielen</h4><span>Software Engineer</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_Elena-Garcia-Cancela.jpg" alt="Elena Garcia Cancela" loading="lazy"><div class="info"><h4>Elena Garcia Cancela</h4><span>Project Manager</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_QM1.jpg" alt="Elora McFall" loading="lazy"><div class="info"><h4>Elora McFall</h4><span>Founders Associate</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_QM2.jpg" alt="Pierre-Louis Nuss" loading="lazy"><div class="info"><h4>Pierre-Louis Nuss</h4><span>Intern</span></div></div>
+    <div class="member reveal"><img src="assets/team/team_QM3.jpg" alt="Jerzy Wierzbicki" loading="lazy"><div class="info"><h4>Jerzy Wierzbicki</h4><span>Nanofab Intern</span></div></div>
+  </div>
+</section>
+
+<section id="news">
+  <div class="reveal">
+    <div class="kicker">News</div>
+    <h2 class="section-title">Highlights of our journey</h2>
+    <p class="section-sub">For regular updates, follow our <a href="https://www.linkedin.com/company/quantamap" target="_blank" rel="noopener" style="color:var(--pink-soft)">LinkedIn page</a>.</p>
+  </div>
+  <div class="timeline reveal">
+    <div class="tl-item">
+      <span class="tag">Project</span>
+      <span class="date">May 2026</span>
+      <a class="tl-link" href="news/qorrelations-project.html">
+        <h3>QORRELATIONS project starts</h3>
+      </a>
+      <p>Scalable test and measurement for superconducting quantum chips.</p>
+    </div>
+    <div class="tl-item">
+      <span class="tag tag-funding">Funding</span>
+      <span class="date">February 2026</span>
+      <a class="tl-link" href="news/eic-accelerator.html">
+        <h3>QuantaMap receives EIC Accelerator</h3>
+      </a>
+      <p>Recognition and backing from the European Innovation Council's flagship programme.</p>
+    </div>
+    <div class="tl-item">
+      <span class="tag tag-science">Science</span>
+      <span class="date">February 2026</span>
+      <a class="tl-link" href="news/nano-letters-paper.html">
+        <h3>Our first paper demonstrates microscope performance</h3>
+      </a>
+      <p>Published results showcasing what our SQUID-on-tip microscope can do.</p>
+    </div>
+    <div class="tl-item">
+      <span class="tag">Project</span>
+      <span class="date">June 2025</span>
+      <a class="tl-link" href="news/quacimi-project.html">
+        <h3>MKB Hightech project QUACIMI</h3>
+      </a>
+      <p>New collaborative high-tech project underway.</p>
+    </div>
+    <div class="tl-item">
+      <span class="tag">Project</span>
+      <span class="date">April 2024</span>
+      <a class="tl-link" href="news/deteqt-kickoff.html">
+        <h3>DeteQT kicks off</h3>
+      </a>
+      <p>Another milestone project begins.</p>
+    </div>
+    <div class="tl-item">
+      <span class="tag tag-funding">Funding</span>
+      <span class="date">December 2023</span>
+      <a class="tl-link" href="news/funding-announcement.html">
+        <h3>QuantaMap secures &euro;1.4 million in funding</h3>
+      </a>
+      <p>Early funding to solve a major roadblock in the quantum revolution.</p>
+    </div>
+  </div>
+</section>
+
+<section id="careers">
+  <div class="reveal">
+    <div class="kicker">We are hiring</div>
+    <h2 class="section-title">Join our growth journey</h2>
+    <p class="section-sub">We currently have the following internship projects available (university or HBO), and we're happy to host interns and BSc/MSc students on many other technical and non-technical topics.</p>
+  </div>
+  <div class="roles">
+    <div class="role reveal" onclick="toggleRole(this)">
+      <div class="role-header">
+        <div><h4>Mechanical Engineering Internship</h4><p>Develop an automated sample exchange system operating at cryogenic conditions.</p></div>
+        <div class="arrow">Details &rarr;</div>
+      </div>
+      <div class="role-body">
+        <p>Design and build a reliable automated sample exchange mechanism that operates at cryogenic temperatures (down to 4 K). You will work on mechanical design, prototype testing, and integration with our scanning probe microscope — a direct contribution to reducing measurement turnaround time for our customers.</p>
+        <a class="apply-btn" href="mailto:join-us@quantamap.eu?subject=Internship%3A%20Mechanical%20engineering">Apply &rarr;</a>
+      </div>
+    </div>
+    <div class="role reveal" onclick="toggleRole(this)">
+      <div class="role-header">
+        <div><h4>Database Internship</h4><p>Design and implement a scalable database system for our scan data.</p></div>
+        <div class="arrow">Details &rarr;</div>
+      </div>
+      <div class="role-body">
+        <p>We generate rich multi-channel scan datasets and need a robust, queryable storage layer to support data analysis and customer workflows. You will architect and implement a database solution — schema design, ingestion pipelines, and a query interface — from the ground up.</p>
+        <a class="apply-btn" href="mailto:join-us@quantamap.eu?subject=Internship%3A%20Database">Apply &rarr;</a>
+      </div>
+    </div>
+    <div class="role reveal" onclick="toggleRole(this)">
+      <div class="role-header">
+        <div><h4>IT Infrastructure Internship</h4><p>Develop a scalable IT infrastructure for our company.</p></div>
+        <div class="arrow">Details &rarr;</div>
+      </div>
+      <div class="role-body">
+        <p>We are building the internal backbone — networking, device management, security, cloud services — for a fast-growing hardware and software company. You will scope the requirements, select tools, and implement a professional IT infrastructure that scales with us from 15 to 50+ people.</p>
+        <a class="apply-btn" href="mailto:join-us@quantamap.eu?subject=Internship%3A%20IT%20infrastructure">Apply &rarr;</a>
+      </div>
+    </div>
+    <div class="role reveal" onclick="toggleRole(this)">
+      <div class="role-header">
+        <div><h4>Research Internship — Probe Fabrication</h4><p>Investigate scalability of AFM-SOT probe fabrication.</p></div>
+        <div class="arrow">Details &rarr;</div>
+      </div>
+      <div class="role-body">
+        <p>SQUID-on-tip probes are the sensing heart of our microscope. You will investigate the fabrication process, identify bottlenecks that limit yield and reproducibility, and develop protocols to increase throughput — with direct impact on how many systems we can ship.</p>
+        <a class="apply-btn" href="mailto:join-us@quantamap.eu?subject=Internship%3A%20AFM-SOT%20probe%20fabrication">Apply &rarr;</a>
+      </div>
+    </div>
+    <div class="role reveal" onclick="toggleRole(this)">
+      <div class="role-header">
+        <div><h4>UI/UX Internship</h4><p>Hands-on project to improve the UI/UX of our measurement and analysis software.</p></div>
+        <div class="arrow">Details &rarr;</div>
+      </div>
+      <div class="role-body">
+        <p>Our instrument control and data analysis software is used daily by physicists and engineers. You will conduct user research, identify pain points, and redesign key workflows — then work with our software engineers to implement the improvements in a real product used by customers worldwide.</p>
+        <a class="apply-btn" href="mailto:join-us@quantamap.eu?subject=Internship%3A%20UI%2FUX">Apply &rarr;</a>
+      </div>
+    </div>
+  </div>
+  <div class="careers-note reveal">
+    <h3>Working at QuantaMap</h3>
+    <p>We are a young, fast-moving startup with ample opportunity for you to grow. You get to work with world-leading experts in an exciting, innovative field on top of the strategic agendas of the world's most innovative nations. We explicitly welcome applicants from all backgrounds and identities.</p>
+    <p style="margin-top:14px">To apply, send your CV and a short message on why you want to join to <a href="mailto:join-us@quantamap.eu" style="color:#fff;text-decoration:underline">join-us@quantamap.eu</a>. For internships, let us know your preferred dates and whether it's part of your curriculum. Questions? Call us at <a href="tel:+31649588920" style="color:#fff;text-decoration:underline">+31 6 4958 8920</a>.</p>
+    <a class="btn apply" href="mailto:join-us@quantamap.eu">Apply now &rarr;</a>
+  </div>
+</section>
+
+<section class="partners">
+  <div class="reveal" style="text-align:center">
+    <div class="kicker" style="justify-content:center">Our partners</div>
+    <h2 class="section-title">Backed by a strong ecosystem</h2>
+  </div>
+  <div class="logo-row reveal">
+    <a href="https://www.quantware.eu" target="_blank" rel="noopener"><img src="assets/customers/customer_quantware.svg" alt="QuantWare" loading="lazy"></a>
+    <a href="https://orangeqs.com" target="_blank" rel="noopener"><img src="assets/partners/partner_OrangeQS.png" alt="Orange QS" loading="lazy"></a>
+    <a href="https://quantumdelta.nl" target="_blank" rel="noopener"><img src="assets/partners/partner_QDNL.png" alt="Quantum Delta NL" loading="lazy"></a>
+    <a href="https://next-generation-eu.europa.eu" target="_blank" rel="noopener"><img src="assets/partners/partner_Next-generation-EU.png" alt="Next Generation EU" loading="lazy"></a>
+    <a href="https://www.groundstate.vc" target="_blank" rel="noopener"><img src="assets/partners/partner_Ground-State-Ventures.png" alt="Ground State Ventures" loading="lazy"></a>
+    <a href="https://www.universiteitleiden.nl" target="_blank" rel="noopener"><img src="assets/partners/partner_Leiden-University.png" alt="Leiden University" loading="lazy"></a>
+    <a href="https://www.zuid-holland.nl" target="_blank" rel="noopener"><img src="assets/partners/partner_Provincie-ZH.png" alt="Provincie Zuid-Holland" loading="lazy"></a>
+    <a href="https://www.nwo.nl" target="_blank" rel="noopener"><img src="assets/partners/partner_NWO.png" alt="NWO" loading="lazy"></a>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="reveal">
+    <div class="kicker">Contact</div>
+    <h2 class="section-title">How to reach us</h2>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-card reveal">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Visiting address</h3>
+      <p>Robert Boyleweg 4<br>2333 CG Leiden<br>The Netherlands</p>
+      <a href="https://www.google.com/maps/search/QuantaMap+Leiden" target="_blank" rel="noopener" style="margin-top:12px;color:#fff;text-decoration:underline">Route via Google Maps &rarr;</a>
+    </div>
+    <div class="contact-card reveal">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Reach out to our CEO</h3>
+      <p style="margin-bottom:10px"><strong style="color:#fff;font-weight:500">Johannes Jobst</strong></p>
+      <a href="mailto:johannes@quantamap.eu">johannes@quantamap.eu</a>
+      <a href="tel:+31712073291">Office: +31 71 207 3291</a>
+      <a href="tel:+31649588920">Mobile: +31 649 5889 20</a>
+      <a href="https://www.linkedin.com/in/johannes-jobst/" target="_blank" rel="noopener">LinkedIn &rarr;</a>
+    </div>
+    <div class="contact-card reveal">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.6 3 14.4 0 18M12 3c-3 3.6-3 14.4 0 18"/></svg>Follow us</h3>
+      <p style="margin-bottom:10px">Regular updates on our journey:</p>
+      <a href="https://www.linkedin.com/company/quantamap" target="_blank" rel="noopener">LinkedIn &rarr;</a>
+      <a href="mailto:join-us@quantamap.eu">join-us@quantamap.eu</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <img src="assets/logo_quantamap.png" alt="QuantaMap" style="height:52px;width:auto;margin-bottom:16px">
+
+  <p>&copy; 2026 QuantaMap. All rights reserved. Robert Boyleweg 4, 2333 CG Leiden, The Netherlands</p>
+  <p>VAT: NL864563760B01 &middot; Chamber of Commerce (KVK): 88280195</p>
+</footer>
+
+<script>
+// ---- role accordion ----
+function toggleRole(el){
+  const wasOpen=el.classList.contains('open');
+  document.querySelectorAll('.role.open').forEach(r=>r.classList.remove('open'));
+  if(!wasOpen) el.classList.add('open');
+}
+
+// ---- particle field ----
+const cv=document.getElementById('field'),cx=cv.getContext('2d');
+let W,H,pts=[];
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;
+  const n=Math.min(90,Math.floor(W*H/16000));
+  pts=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.6+.4,c:Math.random()<.5?'240,0,144':'122,75,214'}));
+}
+resize();addEventListener('resize',resize);
+function tick(){
+  cx.clearRect(0,0,W,H);
+  for(const p of pts){
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;
+    if(p.y<0||p.y>H)p.vy*=-1;
+    cx.beginPath();cx.arc(p.x,p.y,p.r,0,7);cx.fillStyle=`rgba(${p.c},.55)`;cx.fill();
+  }
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const a=pts[i],b=pts[j],d=(a.x-b.x)**2+(a.y-b.y)**2;
+    if(d<14400){cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);
+      cx.strokeStyle=`rgba(240,0,144,${.12*(1-d/14400)})`;cx.lineWidth=.7;cx.stroke();}
+  }
+  requestAnimationFrame(tick);
+}
+tick();
+
+// ---- nav ----
+const nav=document.getElementById('nav');
+addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>40));
+const burger=document.getElementById('hamburger'),links=document.getElementById('navLinks');
+burger.addEventListener('click',()=>links.classList.toggle('open'));
+links.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>links.classList.remove('open')));
+
+// ---- reveal on scroll ----
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+</script>
+</body>
+</html>
